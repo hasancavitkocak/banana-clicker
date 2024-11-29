@@ -36,6 +36,5 @@ export const socketConfig: CustomSocketConfig = {
 };
 
 export function getSocketUrl(): string {
-  const isDev = process.env.NODE_ENV === 'development';
-  return isDev ? 'http://localhost:3000' : window.location.origin;
+  return window.location.origin;
 }

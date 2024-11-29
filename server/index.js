@@ -17,11 +17,11 @@ const httpServer = createServer(app);
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-app.use(healthCheckRouter);
-
 // Serve static files from dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
+
+// Routes
+app.use('/api', healthCheckRouter);
 
 // Handle client-side routing
 app.get('*', (req, res) => {
