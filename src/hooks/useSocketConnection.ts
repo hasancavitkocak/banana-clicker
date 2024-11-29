@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { socketConfig, getSocketUrl, SOCKET_EVENTS } from '../config/socketConfig';
+import { logger } from '../utils/logger';
 
 export function useSocketConnection() {
   const [isConnected, setIsConnected] = useState(false);
@@ -12,20 +13,26 @@ export function useSocketConnection() {
   const connect = useCallback(() => {
     if (!socketRef.current && reconnectAttempts.current < maxReconnectAttempts) {
       const url = getSocketUrl();
+      logger.info('Connecting to socket server:', url);
+
       socketRef.current = io(url, {
         ...socketConfig,
-        transports: reconnectAttempts.current === 0 ? ['websocket'] : ['websocket', 'polling']
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 20000
       });
 
       socketRef.current.on(SOCKET_EVENTS.CONNECT, () => {
+        logger.info('Connected to server');
         setIsConnected(true);
         setError(null);
         reconnectAttempts.current = 0;
-        console.log('Connected to server');
       });
 
       socketRef.current.on(SOCKET_EVENTS.CONNECT_ERROR, (err) => {
-        console.error('Connection error:', err);
+        logger.error('Connection error:', err);
         setError(err);
         setIsConnected(false);
         reconnectAttempts.current += 1;
@@ -41,9 +48,9 @@ export function useSocketConnection() {
         }
       });
 
-      socketRef.current.on(SOCKET_EVENTS.DISCONNECT, () => {
+      socketRef.current.on(SOCKET_EVENTS.DISCONNECT, (reason) => {
+        logger.info('Disconnected from server:', reason);
         setIsConnected(false);
-        console.log('Disconnected from server');
       });
     }
   }, []);

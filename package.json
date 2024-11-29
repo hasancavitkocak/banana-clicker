@@ -7,22 +7,23 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "server": "node server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
+    "fs-extra": "^11.2.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "socket.io": "^4.7.4",
     "socket.io-client": "^4.7.4",
-    "use-sound": "^4.0.1"
-  },
-  "devDependencies": {
+    "use-sound": "^4.0.1",
+    "winston": "^3.11.0",
     "@types/express": "^4.17.21",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.11.24",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
