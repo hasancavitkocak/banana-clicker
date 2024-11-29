@@ -34,7 +34,12 @@ app.get('/health', (req, res) => {
 
 // Serve index.html for all routes to support client-side routing
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, '../dist/index.html'));
+  try {
+    res.sendFile(join(__dirname, '../dist/index.html'));
+  } catch (error) {
+    console.error('Error serving index.html:', error);
+    res.status(500).send('Error serving application');
+  }
 });
 
 // Initialize Socket.IO with CORS and connection settings
@@ -54,7 +59,6 @@ io.on('connection', (socket) => {
 
   socket.emit('connected', { id: socket.id });
 
-  // Add handler for setting username
   socket.on('setUsername', ({ username }) => {
     matchmakingService.setUsername(socket.id, username);
   });
