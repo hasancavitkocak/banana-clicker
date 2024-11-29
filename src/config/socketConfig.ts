@@ -36,6 +36,6 @@ export const socketConfig: CustomSocketConfig = {
 };
 
 export function getSocketUrl(): string {
-  // Production server URL on Render.com
-  return 'https://banana-clicker-server.onrender.com';
+  const isDev = process.env.NODE_ENV === 'development';
+  return isDev ? 'http://localhost:3000' : window.location.origin;
 }

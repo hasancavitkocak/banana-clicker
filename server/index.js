@@ -32,16 +32,6 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Serve index.html for all routes to support client-side routing
-app.get('*', (req, res) => {
-  try {
-    res.sendFile(join(__dirname, '../dist/index.html'));
-  } catch (error) {
-    console.error('Error serving index.html:', error);
-    res.status(500).send('Error serving application');
-  }
-});
-
 // Initialize Socket.IO with CORS and connection settings
 const io = new Server(httpServer, {
   ...serverSocketConfig,
@@ -111,6 +101,11 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
     matchmakingService.handleDisconnect(socket.id);
   });
+});
+
+// Serve index.html for all remaining routes
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, '../dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
