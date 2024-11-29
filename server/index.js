@@ -3,8 +3,14 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { MatchmakingService } from './services/MatchmakingService.js';
 import { serverSocketConfig, SOCKET_EVENTS } from './config/socketConfig.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -18,9 +24,17 @@ app.use(cors({
   credentials: true
 }));
 
+// Serve static files from the dist directory
+app.use(express.static(join(__dirname, '../dist')));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+// Serve index.html for all routes to support client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, '../dist/index.html'));
 });
 
 // Initialize Socket.IO with CORS and connection settings

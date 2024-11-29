@@ -36,6 +36,6 @@ export const socketConfig: CustomSocketConfig = {
 };
 
 export function getSocketUrl(): string {
-  // Render.com üzerindeki sunucu URL'nizi buraya ekleyin
+  // Production server URL on Render.com
   return 'https://banana-clicker-server.onrender.com';
 }
