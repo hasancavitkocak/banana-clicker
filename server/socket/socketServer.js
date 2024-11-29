@@ -9,7 +9,14 @@ export function createSocketServer(httpServer, corsOptions) {
     ...serverSocketConfig,
     cors: corsOptions,
     pingTimeout: 10000,
-    pingInterval: 5000
+    pingInterval: 5000,
+    transports: ['websocket', 'polling'],
+    path: '/socket.io/',
+    connectTimeout: 45000,
+    maxHttpBufferSize: 1e8,
+    allowEIO3: true,
+    allowUpgrades: true,
+    upgradeTimeout: 10000
   });
 
   const matchmakingService = new MatchmakingService();
@@ -17,6 +24,13 @@ export function createSocketServer(httpServer, corsOptions) {
 
   io.on('connection', (socket) => {
     logger.info(`Client connected: ${socket.id}`);
+
+    // Send initial connection status
+    socket.emit('connectionStatus', { 
+      connected: true,
+      socketId: socket.id,
+      timestamp: Date.now()
+    });
 
     socket.on('setUsername', (data) => {
       logger.info(`Username set for ${socket.id}: ${data.username}`);
@@ -47,16 +61,13 @@ export function createSocketServer(httpServer, corsOptions) {
       eventHandlers.handleGameEnded(socket, data);
     });
 
-    socket.on('disconnect', () => {
-      logger.info(`Client disconnected: ${socket.id}`);
+    socket.on('disconnect', (reason) => {
+      logger.info(`Client disconnected: ${socket.id}, reason: ${reason}`);
       eventHandlers.handleDisconnect(socket);
     });
 
-    // Send initial connection status
-    socket.emit('connectionStatus', { 
-      connected: true,
-      socketId: socket.id,
-      timestamp: Date.now()
+    socket.on('error', (error) => {
+      logger.error(`Socket error for ${socket.id}:`, error);
     });
   });
 
