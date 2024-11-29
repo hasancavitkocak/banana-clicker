@@ -10,7 +10,7 @@ export const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-export const PORT = process.env.PORT || 3000;
+export const PORT = process.env.PORT || 8080;
 
 export const ENV = {
   NODE_ENV: process.env.NODE_ENV || 'production',
