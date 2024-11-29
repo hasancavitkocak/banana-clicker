@@ -1,74 +1,50 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useSocketConnection } from './useSocketConnection';
 import { SOCKET_EVENTS } from '../config/socketConfig';
-import { logger } from '../utils/logger';
 
 export function useSocket() {
-  const { socket, isConnected, reconnect } = useSocketConnection();
+  const { socket, isConnected } = useSocketConnection();
 
-  useEffect(() => {
-    if (socket) {
-      socket.on('connectionStatus', (status) => {
-        logger.info('Connection status:', status);
-      });
-
-      socket.on('connect_error', (error) => {
-        logger.error('Connection error:', error);
-        setTimeout(reconnect, 1000);
-      });
-
-      return () => {
-        socket.off('connectionStatus');
-        socket.off('connect_error');
-      };
-    }
-  }, [socket, reconnect]);
-
-  const findMatch = useCallback(({ duration }) => {
+  const setUsername = useCallback((username: string) => {
     if (!isConnected || !socket) {
-      logger.error('Socket not connected');
+      console.error('Socket not connected');
       return;
     }
-    logger.info('Finding match with duration:', duration);
+    socket.emit(SOCKET_EVENTS.SET_USERNAME, { username });
+  }, [socket, isConnected]);
+
+  const findMatch = useCallback((duration: number) => {
+    if (!isConnected || !socket) {
+      console.error('Socket not connected');
+      return;
+    }
     socket.emit(SOCKET_EVENTS.FIND_MATCH, { duration });
   }, [socket, isConnected]);
 
   const cancelMatch = useCallback(() => {
-    if (!isConnected || !socket) {
-      logger.error('Socket not connected');
-      return;
-    }
-    logger.info('Cancelling match');
+    if (!isConnected || !socket) return;
     socket.emit(SOCKET_EVENTS.MATCH_CANCELLED);
   }, [socket, isConnected]);
 
-  const updateScore = useCallback(({ gameId, score, clicks, maxCombo }) => {
-    if (!isConnected || !socket) {
-      logger.error('Socket not connected');
-      return;
-    }
+  const updateScore = useCallback((gameId: string, score: number, clicks: number, maxCombo: number) => {
+    if (!isConnected || !socket) return;
     socket.emit(SOCKET_EVENTS.UPDATE_SCORE, { gameId, score, clicks, maxCombo });
   }, [socket, isConnected]);
 
-  const surrender = useCallback(({ gameId }) => {
-    if (!isConnected || !socket) {
-      logger.error('Socket not connected');
-      return;
-    }
+  const surrender = useCallback((gameId: string) => {
+    if (!isConnected || !socket) return;
     socket.emit(SOCKET_EVENTS.SURRENDER, { gameId });
   }, [socket, isConnected]);
 
-  const endGame = useCallback(({ gameId }) => {
-    if (!isConnected || !socket) {
-      logger.error('Socket not connected');
-      return;
-    }
+  const endGame = useCallback((gameId: string) => {
+    if (!isConnected || !socket) return;
     socket.emit(SOCKET_EVENTS.GAME_ENDED, { gameId });
   }, [socket, isConnected]);
 
   return {
     socket,
     isConnected,
+    setUsername,
     findMatch,
     cancelMatch,
     updateScore,

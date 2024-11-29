@@ -1,19 +1,3 @@
-FROM node:18-alpine as builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install all dependencies (including devDependencies)
-RUN npm install
-
-# Copy source code
-COPY . .
-
-# Build the application
-RUN npm run build
-
 FROM node:18-alpine
 
 WORKDIR /app
@@ -21,12 +5,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --production
+# Install dependencies
+RUN npm ci
 
-# Copy built files and server
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server ./server
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
 
 # Expose port
 EXPOSE 8080
