@@ -17,7 +17,7 @@ const httpServer = createServer(app);
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
+// Health check route
 app.use('/api', healthCheckRouter);
 
 // Serve static files from dist directory
@@ -32,6 +32,6 @@ app.get('*', (req, res) => {
 createSocketServer(httpServer, corsOptions);
 
 // Start server
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

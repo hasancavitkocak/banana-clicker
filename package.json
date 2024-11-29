@@ -8,8 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "start": "node server/index.js",
-    "deploy": "flyctl deploy"
+    "start": "node server/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -14,6 +14,5 @@ export const PORT = process.env.PORT || 8080;
 
 export const ENV = {
   NODE_ENV: process.env.NODE_ENV || 'production',
-  CLIENT_URL: process.env.CLIENT_URL || '*',
-  MONGODB_URI: process.env.MONGODB_URI
+  CLIENT_URL: process.env.CLIENT_URL || '*'
 };
