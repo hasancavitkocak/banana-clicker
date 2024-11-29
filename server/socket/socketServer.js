@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
-import { serverSocketConfig, SOCKET_EVENTS } from '../config/socketConfig.js';
+import { serverSocketConfig } from '../config/socketConfig.js';
 import { SocketEventHandlers } from './eventHandlers.js';
+import { MatchmakingService } from '../services/MatchmakingService.js';
 
 export function createSocketServer(httpServer, corsOptions) {
   const io = new Server(httpServer, {
@@ -15,11 +16,11 @@ export function createSocketServer(httpServer, corsOptions) {
     eventHandlers.handleConnection(socket);
 
     socket.on('setUsername', (data) => eventHandlers.handleSetUsername(socket, data));
-    socket.on(SOCKET_EVENTS.FIND_MATCH, (data) => eventHandlers.handleFindMatch(socket, data));
-    socket.on(SOCKET_EVENTS.MATCH_CANCELLED, () => eventHandlers.handleMatchCancelled(socket));
-    socket.on(SOCKET_EVENTS.UPDATE_SCORE, (data) => eventHandlers.handleUpdateScore(socket, data));
-    socket.on(SOCKET_EVENTS.SURRENDER, (data) => eventHandlers.handleSurrender(socket, data));
-    socket.on(SOCKET_EVENTS.GAME_ENDED, (data) => eventHandlers.handleGameEnded(socket, data));
+    socket.on('findMatch', (data) => eventHandlers.handleFindMatch(socket, data));
+    socket.on('matchCancelled', () => eventHandlers.handleMatchCancelled(socket));
+    socket.on('updateScore', (data) => eventHandlers.handleUpdateScore(socket, data));
+    socket.on('surrender', (data) => eventHandlers.handleSurrender(socket, data));
+    socket.on('gameEnded', (data) => eventHandlers.handleGameEnded(socket, data));
     socket.on('disconnect', () => eventHandlers.handleDisconnect(socket));
   });
 
