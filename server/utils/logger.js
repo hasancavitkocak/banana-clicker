@@ -1,16 +1,29 @@
-export const logger = {
-  info: (message, ...args) => {
-    console.log(`[INFO] ${message}`, ...args);
-  },
-  error: (message, ...args) => {
-    console.error(`[ERROR] ${message}`, ...args);
-  },
-  warn: (message, ...args) => {
-    console.warn(`[WARN] ${message}`, ...args);
-  },
-  debug: (message, ...args) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(`[DEBUG] ${message}`, ...args);
-    }
-  }
-};
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.File({ 
+    filename: 'error.log', 
+    level: 'error' 
+  }));
+  logger.add(new winston.transports.File({ 
+    filename: 'combined.log' 
+  }));
+}
+
+export { logger };

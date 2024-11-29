@@ -21,15 +21,13 @@ export const serverSocketConfig = {
     credentials: true,
     allowedHeaders: ["*"]
   },
-  pingTimeout: 60000,
-  pingInterval: 25000,
+  pingTimeout: 10000,
+  pingInterval: 5000,
   path: '/socket.io/',
   transports: ['websocket', 'polling'],
   allowEIO3: true,
   allowUpgrades: true,
   upgradeTimeout: 10000,
-  cookie: false,
-  serveClient: false,
   connectTimeout: 45000,
   maxHttpBufferSize: 1e8
 };
