@@ -6,6 +6,7 @@ import { createSocketServer } from './socket/socketServer.js';
 import healthCheckRouter from './routes/healthCheck.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs-extra';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,32 +21,54 @@ app.use(express.json());
 // Routes
 app.use(healthCheckRouter);
 
+// Ensure dist directory exists
+const distPath = path.join(__dirname, '../dist');
+const indexPath = path.join(distPath, 'index.html');
+
 // Build check middleware
-const checkBuildExists = (req, res, next) => {
-  const indexPath = path.join(__dirname, '../dist/index.html');
+const ensureBuildExists = async (req, res, next) => {
   try {
-    if (require('fs').existsSync(indexPath)) {
-      next();
-    } else {
-      res.status(500).send('Application is building. Please try again in a moment.');
+    const exists = await fs.pathExists(indexPath);
+    if (exists) {
+      return next();
     }
+    
+    console.log('Build directory not found, triggering build process...');
+    res.status(503).send('Application is building. Please try again in a moment.');
   } catch (err) {
-    res.status(500).send('Application is building. Please try again in a moment.');
+    console.error('Error checking build directory:', err);
+    res.status(500).send('Internal server error');
   }
 };
 
-// Serve static files from dist directory if they exist
-app.use(express.static(path.join(__dirname, '../dist')));
+// Serve static files from dist directory
+app.use(express.static(distPath));
 
-// Handle client-side routing with build check
-app.get('*', checkBuildExists, (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+// Handle client-side routing
+app.get('*', ensureBuildExists, (req, res) => {
+  res.sendFile(indexPath);
 });
 
 // Socket.IO setup
 createSocketServer(httpServer, corsOptions);
 
 // Start server
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    // Ensure dist directory exists before starting
+    const buildExists = await fs.pathExists(indexPath);
+    if (!buildExists) {
+      console.log('Build directory not found. Please run npm run build first.');
+      process.exit(1);
+    }
+
+    httpServer.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+};
+
+startServer();
