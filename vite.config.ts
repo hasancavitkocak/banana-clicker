@@ -14,14 +14,16 @@ export default defineConfig({
       },
     },
   },
-  optimizeDeps: {
-    include: ['socket.io-client']
-  },
   build: {
-    rollupOptions: {
-      external: [],
-    },
+    outDir: 'dist',
     assetsDir: 'assets',
-    copyPublicDir: true,
+    rollupOptions: {
+      input: {
+        main: './index.html',
+      },
+    },
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
   }
 });

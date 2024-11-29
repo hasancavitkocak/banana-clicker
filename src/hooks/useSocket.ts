@@ -5,6 +5,14 @@ import { SOCKET_EVENTS } from '../config/socketConfig';
 export function useSocket() {
   const { socket, isConnected } = useSocketConnection();
 
+  const setUsername = useCallback((username: string) => {
+    if (!isConnected || !socket) {
+      console.error('Socket not connected');
+      return;
+    }
+    socket.emit(SOCKET_EVENTS.SET_USERNAME, { username });
+  }, [socket, isConnected]);
+
   const findMatch = useCallback((duration: number) => {
     if (!isConnected || !socket) {
       console.error('Socket not connected');
@@ -36,6 +44,7 @@ export function useSocket() {
   return {
     socket,
     isConnected,
+    setUsername,
     findMatch,
     cancelMatch,
     updateScore,

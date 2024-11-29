@@ -4,6 +4,15 @@ export class MatchmakingService {
   constructor() {
     this.waitingPlayers = new Map();
     this.activeGames = new Map();
+    this.usernames = new Map(); // Store usernames
+  }
+
+  setUsername(socketId, username) {
+    this.usernames.set(socketId, username);
+  }
+
+  getUsername(socketId) {
+    return this.usernames.get(socketId) || `Player ${socketId.slice(0, 4)}`;
   }
 
   findMatch(socket, duration) {
@@ -29,6 +38,7 @@ export class MatchmakingService {
     for (const [, players] of this.waitingPlayers.entries()) {
       players.delete(playerId);
     }
+    this.usernames.delete(playerId); // Clean up username when player leaves
   }
 
   getWaitingPlayersForDuration(duration) {
@@ -58,14 +68,25 @@ export class MatchmakingService {
       scores: { [player1.id]: 0, [player2.id]: 0 },
       clicks: { [player1.id]: 0, [player2.id]: 0 },
       maxCombos: { [player1.id]: 1, [player2.id]: 1 },
-      duration: duration
+      duration: duration,
+      usernames: {
+        [player1.id]: this.getUsername(player1.id),
+        [player2.id]: this.getUsername(player2.id)
+      }
     });
 
     player1.join(gameId);
     player2.join(gameId);
 
-    player1.emit(SOCKET_EVENTS.MATCH_FOUND, { gameId });
-    player2.emit(SOCKET_EVENTS.MATCH_FOUND, { gameId });
+    // Send match found event with opponent usernames
+    player1.emit(SOCKET_EVENTS.MATCH_FOUND, { 
+      gameId,
+      opponentUsername: this.getUsername(player2.id)
+    });
+    player2.emit(SOCKET_EVENTS.MATCH_FOUND, { 
+      gameId,
+      opponentUsername: this.getUsername(player1.id)
+    });
     
     console.log('Match created:', gameId, 'Duration:', duration);
   }

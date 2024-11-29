@@ -1,40 +1,34 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { serverSocketConfig, SOCKET_EVENTS } from './config/socketConfig.js';
+import cors from 'cors';
+import dotenv from 'dotenv';
 import { MatchmakingService } from './services/MatchmakingService.js';
-import fs from 'fs';
+import { serverSocketConfig, SOCKET_EVENTS } from './config/socketConfig.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
 
-// Check if dist directory exists
-const distPath = join(__dirname, '../dist');
-if (!fs.existsSync(distPath)) {
-  console.error('Error: dist directory not found. Please run npm run build first.');
-  process.exit(1);
-}
+// Enable CORS
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 
-// Serve static files
-app.use(express.static(distPath));
-app.use('/sounds', express.static(join(__dirname, '../public/sounds')));
-
-// Handle all routes
-app.get('*', (req, res) => {
-  res.sendFile(join(distPath, 'index.html'));
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 // Initialize Socket.IO with CORS and connection settings
 const io = new Server(httpServer, {
   ...serverSocketConfig,
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
+    origin: process.env.CLIENT_URL || '*',
+    methods: ['GET', 'POST'],
     credentials: true
   }
 });
@@ -44,8 +38,12 @@ const matchmakingService = new MatchmakingService();
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // Send immediate acknowledgment
   socket.emit('connected', { id: socket.id });
+
+  // Add handler for setting username
+  socket.on('setUsername', ({ username }) => {
+    matchmakingService.setUsername(socket.id, username);
+  });
 
   socket.on(SOCKET_EVENTS.FIND_MATCH, ({ duration }) => {
     console.log('Finding match for:', socket.id, 'Duration:', duration);
@@ -91,18 +89,13 @@ io.on('connection', (socket) => {
     matchmakingService.removeGame(gameId);
   });
 
-  socket.on('error', (error) => {
-    console.error('Socket error:', error);
-  });
-
-  socket.on(SOCKET_EVENTS.DISCONNECT, () => {
+  socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
     matchmakingService.handleDisconnect(socket.id);
   });
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
-httpServer.listen(PORT, '0.0.0.0', () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

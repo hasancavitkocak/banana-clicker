@@ -17,7 +17,8 @@ export const SOCKET_EVENTS = {
   OPPONENT_SURRENDERED: 'opponentSurrendered',
   OPPONENT_DISCONNECTED: 'opponentDisconnected',
   GAME_ENDED: 'gameEnded',
-  WAITING: 'waiting'
+  WAITING: 'waiting',
+  SET_USERNAME: 'setUsername'
 } as const;
 
 export const socketConfig: CustomSocketConfig = {
@@ -31,12 +32,10 @@ export const socketConfig: CustomSocketConfig = {
   reconnection: true,
   upgrade: true,
   rememberUpgrade: true,
-  secure: false
+  secure: true
 };
 
 export function getSocketUrl(): string {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = window.location.hostname;
-  const port = '3000';
-  return `${protocol}//${host}:${port}`;
+  // Render.com üzerindeki sunucu URL'nizi buraya ekleyin
+  return 'https://banana-clicker-server.onrender.com';
 }
