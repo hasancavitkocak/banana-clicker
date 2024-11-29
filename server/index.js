@@ -15,6 +15,7 @@ const httpServer = createServer(app);
 
 // Middleware
 app.use(cors(corsOptions));
+app.use(express.json());
 
 // Serve static files from dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
