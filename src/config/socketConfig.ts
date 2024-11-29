@@ -35,6 +35,12 @@ export const socketConfig: CustomSocketConfig = {
   secure: true
 };
 
+// Sunucu URL'sini ortama göre ayarla
 export function getSocketUrl(): string {
-  return window.location.origin;
+  if (process.env.NODE_ENV === 'production') {
+    // Production ortamında aynı domain'i kullan
+    return window.location.origin;
+  }
+  // Development ortamında localhost'u kullan
+  return 'http://localhost:8080';
 }

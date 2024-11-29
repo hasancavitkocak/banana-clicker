@@ -9,12 +9,14 @@ import { OpponentScore } from './components/OpponentScore';
 import { MatchResults } from './components/MatchResults';
 import { CountdownTimer } from './components/CountdownTimer';
 import { MatchSettings } from './components/MatchSettings';
+import { MatchmakingStatus } from './components/MatchmakingStatus';
 import { useGameLogic } from './hooks/useGameLogic';
 import { GameLayout } from './components/GameLayout';
 import { GameHeader } from './components/GameHeader';
-import { Zap } from 'lucide-react';
+import { UsernameInput } from './components/UsernameInput';
 
 export default function App() {
+  const [username, setUsername] = useState<string>(localStorage.getItem('username') || '');
   const { 
     gameState, 
     surrender,
@@ -23,18 +25,62 @@ export default function App() {
     handleClick, 
     setGameDuration,
     closeMatch,
-    simulationMode,
-    setSimulationMode,
     setRegion,
-    setSkillLevel
+    setSkillLevel,
+    waitTime
   } = useGameLogic();
 
   const showBanana = !gameState.showResults || gameState.isPlaying;
 
+  if (!username) {
+    return (
+      <GameLayout>
+        <GameHeader />
+        <UsernameInput onSubmit={(name) => {
+          localStorage.setItem('username', name);
+          setUsername(name);
+        }} />
+      </GameLayout>
+    );
+  }
+
   return (
     <GameLayout>
-      {/* ... existing code ... */}
+      <GameHeader />
       
+      {gameState.countdown && (
+        <CountdownTimer count={gameState.countdown} />
+      )}
+
+      {showBanana && (
+        <>
+          <GameTimer 
+            timeLeft={gameState.timeLeft} 
+            isPlaying={gameState.isPlaying} 
+          />
+
+          <ScoreDisplay 
+            score={gameState.score}
+            combo={gameState.combo}
+            maxCombo={gameState.maxCombo}
+          />
+
+          {gameState.opponentScore !== undefined && (
+            <OpponentScore 
+              score={gameState.opponentScore}
+              clicks={gameState.opponentClicks}
+              maxCombo={gameState.opponentMaxCombo}
+            />
+          )}
+
+          <BananaButton
+            onClick={handleClick}
+            isPlaying={gameState.isPlaying}
+            isWinning={gameState.opponentScore !== undefined && gameState.score > gameState.opponentScore}
+          />
+        </>
+      )}
+
       <TimeSelector
         onSelectTime={setGameDuration}
         selectedTime={gameState.gameDuration}
@@ -57,7 +103,29 @@ export default function App() {
         isMatchmaking={gameState.isMatchmaking}
       />
 
-      {/* ... rest of the existing code ... */}
+      {gameState.showResults && (
+        <MatchResults
+          result={{
+            playerScore: gameState.score,
+            playerClicks: gameState.clicks,
+            playerMaxCombo: gameState.maxCombo,
+            opponentScore: gameState.opponentScore || 0,
+            opponentClicks: gameState.opponentClicks || 0,
+            opponentMaxCombo: gameState.opponentMaxCombo || 0
+          }}
+          onRematch={startMatchmaking}
+          onClose={closeMatch}
+          surrendered={gameState.surrendered}
+          opponentDisconnected={gameState.opponentDisconnected}
+        />
+      )}
+
+      <MatchmakingStatus 
+        isSearching={gameState.isMatchmaking && !gameState.isPlaying} 
+        waitTime={waitTime}
+      />
+
+      <HighScore highScore={gameState.highScore} />
     </GameLayout>
   );
 }
