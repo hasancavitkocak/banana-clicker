@@ -4,6 +4,11 @@ import cors from 'cors';
 import { corsOptions, PORT } from './config/appConfig.js';
 import { createSocketServer } from './socket/socketServer.js';
 import healthCheckRouter from './routes/healthCheck.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
@@ -12,10 +17,15 @@ const httpServer = createServer(app);
 app.use(cors(corsOptions));
 
 // Serve static files from dist directory
-app.use(express.static('dist'));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // Routes
 app.use(healthCheckRouter);
+
+// Handle client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 
 // Socket.IO setup
 createSocketServer(httpServer, corsOptions);
