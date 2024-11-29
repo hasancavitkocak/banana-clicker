@@ -14,5 +14,6 @@ export const PORT = process.env.PORT || 3000;
 
 export const ENV = {
   NODE_ENV: process.env.NODE_ENV || 'production',
-  CLIENT_URL: process.env.CLIENT_URL || '*'
+  CLIENT_URL: process.env.CLIENT_URL || '*',
+  MONGODB_URI: process.env.MONGODB_URI
 };

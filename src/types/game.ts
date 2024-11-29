@@ -17,6 +17,8 @@ export interface GameState {
   surrendered: boolean;
   gameId?: string;
   opponentDisconnected: boolean;
+  region?: string;
+  skillLevel?: number;
 }
 
 export interface GameStats {
@@ -35,3 +37,5 @@ export interface GameResult {
 }
 
 export type GameDuration = 5 | 10 | 15 | 20;
+export type Region = 'EU' | 'NA' | 'ASIA' | 'AUTO';
+export type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT';
