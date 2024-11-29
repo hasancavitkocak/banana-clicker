@@ -17,14 +17,28 @@ const httpServer = createServer(app);
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Serve static files from dist directory
-app.use(express.static(path.join(__dirname, '../dist')));
-
 // Routes
 app.use(healthCheckRouter);
 
-// Handle client-side routing
-app.get('*', (req, res) => {
+// Build check middleware
+const checkBuildExists = (req, res, next) => {
+  const indexPath = path.join(__dirname, '../dist/index.html');
+  try {
+    if (require('fs').existsSync(indexPath)) {
+      next();
+    } else {
+      res.status(500).send('Application is building. Please try again in a moment.');
+    }
+  } catch (err) {
+    res.status(500).send('Application is building. Please try again in a moment.');
+  }
+};
+
+// Serve static files from dist directory if they exist
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Handle client-side routing with build check
+app.get('*', checkBuildExists, (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
