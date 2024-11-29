@@ -12,6 +12,10 @@ primary_region = "ams"
   min_machines_running = 1
   processes = ["app"]
 
+  [[http_service.ports]]
+    handlers = ["http", "ws"] # HTTP ve WebSocket'i destekle
+    port = 443
+
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
