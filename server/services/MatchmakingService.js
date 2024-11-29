@@ -4,7 +4,7 @@ export class MatchmakingService {
   constructor() {
     this.waitingPlayers = new Map();
     this.activeGames = new Map();
-    this.usernames = new Map(); // Store usernames
+    this.usernames = new Map();
   }
 
   setUsername(socketId, username) {
@@ -18,13 +18,8 @@ export class MatchmakingService {
   findMatch(socket, duration) {
     console.log('Player searching for match:', socket.id, 'Duration:', duration);
     
-    // Remove player from any existing waiting lists first
     this.removePlayerFromWaitingLists(socket.id);
-    
-    // Get or create waiting list for this specific duration
     const durationWaitingPlayers = this.getWaitingPlayersForDuration(duration);
-    
-    // Try to find an opponent with exactly the same duration
     const opponent = this.findOpponentWithSameDuration(socket.id, durationWaitingPlayers);
 
     if (opponent) {
@@ -38,7 +33,7 @@ export class MatchmakingService {
     for (const [, players] of this.waitingPlayers.entries()) {
       players.delete(playerId);
     }
-    this.usernames.delete(playerId); // Clean up username when player leaves
+    this.usernames.delete(playerId);
   }
 
   getWaitingPlayersForDuration(duration) {
@@ -78,7 +73,6 @@ export class MatchmakingService {
     player1.join(gameId);
     player2.join(gameId);
 
-    // Send match found event with opponent usernames
     player1.emit(SOCKET_EVENTS.MATCH_FOUND, { 
       gameId,
       opponentUsername: this.getUsername(player2.id)
